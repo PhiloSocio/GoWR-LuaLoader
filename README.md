@@ -2,7 +2,9 @@
 
 Lua script loader with crash logger for God of War Ragnarok.
 
-Runs as a `version.dll` proxy. On game startup it initializes a Lua 5.4 state, executes every script under `mods/scripts/`, and produces a full crash report if the process hits an unhandled exception.
+Runs as a `version.dll` proxy. On game startup it initializes a Lua 5.4 state,
+executes every script under the configured script roots (`mod/` and `mods/scripts/`by default), 
+and produces a full crash report.
 
 ## Features
 
@@ -18,20 +20,32 @@ Runs as a `version.dll` proxy. On game startup it initializes a Lua 5.4 state, e
 ## Installation
 
 1. Copy `version.dll` next to `GoWR.exe`.
-2. Create the following layout in the game root:
+2. Create `mods/loader_config.toml` in the game root.
+3. Place Lua scripts in either of these locations — both are scanned:
+
+**Option A — flat layout** (Nukem-style):
 
 ```
 God of War Ragnarok/
-├── GoWR.exe
-├── version.dll
 └── mods/
-    ├── loader_config.toml
-    ├── scripts/
-    │   └── example.lua
-    └── logs/
+    └── scripts/
+        └── mymod.lua
 ```
 
-The loader creates `mods/scripts/` and `mods/logs/` automatically if they are missing.
+**Option B — game-internal layout** (Eiton-style):
+
+```
+God of War Ragnarok/
+└── mod/
+    └── int9/
+        └── gameart/
+            └── scripts/
+                └── characters/
+                    └── heroa00/
+                        └── mymod.lua
+```
+
+All `.lua` files under both roots are discovered recursively. Duplicate paths are de-duplicated. Both roots are added to Lua's `package.path`, so `require("int9.gameart.scripts.foo")` and `require("foo")` both resolve.
 
 ## Configuration
 
@@ -40,6 +54,8 @@ The loader creates `mods/scripts/` and `mods/logs/` automatically if they are mi
 ```toml
 [Lua]
 LoadScripts = true
+ScriptRoots = ["mod", "mods/scripts"]
+ScanScriptsRecursively = true
 
 [Logging]
 ConsoleLogLevel = "warn"
@@ -47,12 +63,23 @@ FileLogLevel = "info"
 ```
 
 Log levels: `off`, `trace`, `debug`, `info`, `warning`, `error`, `critical`.
-
+The first root in `ScriptRoots` has the highest priority in `package.path`,
+so `require` resolves there first.
 If the file is missing or malformed, the loader falls back to the defaults above and prints a warning at startup.
 
 ## Writing Scripts
 
-Place `.lua` files in `mods/scripts/`. They are executed in alphabetical order. A script that fails to compile or throws at runtime is skipped; the rest continue to load.
+Scripts can live under either root listed in `ScriptRoots`. Both are scanned recursively, de-duplicated by canonical path, and added to Lua's `package.path`.
+
+```lua
+-- mod/int9/gameart/scripts/main.lua
+local util = require("int9.gameart.scripts.characters.heroa00.utility")
+```
+
+```lua
+-- mods/scripts/main.lua
+local util = require("utility")
+```
 
 Example `mods/scripts/example.lua`:
 
@@ -83,6 +110,8 @@ Available globals inside Lua:
 |---|---|
 | `mods/logs/loader_log.txt` | Runtime log (startup, config, script load results, errors). |
 | `gowr_crash.log` (game root) | Full crash report: exception code, registers, breadcrumbs, callstack. |
+
+_Logs remain under `mods/logs/` regardless of where scripts live._
 
 ## Uninstallation
 

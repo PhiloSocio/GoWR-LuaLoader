@@ -4,7 +4,7 @@
 
 std::shared_ptr<spdlog::logger> Logger::s_Debug = nullptr;
 std::shared_ptr<spdlog::logger> Logger::s_File = nullptr;
-LogLevel Logger::s_ConsoleLevel = LogLevel::Warning;
+LogLevel Logger::s_DebugLevel = LogLevel::Warning;
 LogLevel Logger::s_FileLevel = LogLevel::Info;
 
 spdlog::level::level_enum Logger::ToSpd(LogLevel l) {
@@ -29,11 +29,11 @@ LogLevel Logger::ParseLevel(const std::string& s) {
     return LogLevel::Off;
 }
 
-void Logger::Initialize(const std::filesystem::path& logDir, LogLevel consoleLevel, LogLevel fileLevel) {
-    s_ConsoleLevel = consoleLevel;
+void Logger::Initialize(const std::filesystem::path& logDir, LogLevel debugLevel, LogLevel fileLevel) {
+    s_DebugLevel = debugLevel;
     s_FileLevel = fileLevel;
 
-    if (consoleLevel != LogLevel::Off) {
+    if (debugLevel != LogLevel::Off) {
         try {
             s_Debug = spdlog::stdout_color_mt("gowr_console");
             s_Debug->set_level(spdlog::level::trace);
@@ -67,6 +67,6 @@ void Logger::Shutdown() {
 void Logger::Log(LogLevel level, const std::string& message) {
     if (level == LogLevel::Off) return;
     auto spd = ToSpd(level);
-    if (s_Debug && level >= s_ConsoleLevel) s_Debug->log(spd, message);
+    if (s_Debug && level >= s_DebugLevel) s_Debug->log(spd, message);
     if (s_File && level >= s_FileLevel)       s_File->log(spd, message);
 }

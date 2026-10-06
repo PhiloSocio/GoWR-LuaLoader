@@ -1,0 +1,8 @@
+[Lua]
+LoadScripts = true
+ScriptRoots = ["mod", "mods/scripts"]
+ScanScriptsRecursively = true
+
+[Logging]
+ConsoleLogLevel = "warn"
+FileLogLevel = "info"

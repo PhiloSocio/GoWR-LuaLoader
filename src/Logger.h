@@ -1,8 +1,6 @@
 #pragma once
 
 #include <filesystem>
-#include <memory>
-#include <string>
 #include <spdlog/spdlog.h>
 
 enum class LogLevel {
@@ -17,7 +15,7 @@ enum class LogLevel {
 
 class Logger {
 public:
-    static void Initialize(const std::filesystem::path& logDir, LogLevel consoleLevel, LogLevel fileLevel);
+    static void Initialize(const std::filesystem::path& logDir, LogLevel debugLevel, LogLevel fileLevel);
     static void Shutdown();
     static void Log(LogLevel level, const std::string& message);
     static LogLevel ParseLevel(const std::string& s);
@@ -25,6 +23,6 @@ public:
 private:
     static std::shared_ptr<spdlog::logger> s_Debug;
     static std::shared_ptr<spdlog::logger> s_File;
-    static LogLevel s_ConsoleLevel;
+    static LogLevel s_DebugLevel;
     static LogLevel s_FileLevel;
 };

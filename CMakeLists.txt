@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.21)
 
 project(
     GoWR-LuaLoader
-    VERSION 1.0.0
+    VERSION 1.0.1
     DESCRIPTION "Lua script loader for God of War Ragnarok, with crash logging"
     HOMEPAGE_URL "https://github.com/PhiloSocio/GoWR-LuaLoader"
     LANGUAGES C CXX

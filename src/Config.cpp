@@ -11,6 +11,18 @@ bool LoadConfig(const std::filesystem::path& path, LoaderConfig& out, std::strin
         if (data.contains("Lua")) {
             const auto& g = toml::find(data, "Lua");
             if (g.contains("LoadScripts")) out.LoadScripts = toml::find<bool>(g, "LoadScripts");
+            if (g.contains("ScanScriptsRecursively")) out.ScanScriptsRecursively = toml::find<bool>(g, "ScanScriptsRecursively");
+
+            if (g.contains("ScriptRoots")) {
+                const auto& node = g.at("ScriptRoots");
+                if (node.is_array()) {
+                    std::vector<std::string> roots;
+                    for (const auto& item : node.as_array()) {
+                        if (item.is_string()) roots.push_back(item.as_string());
+                    }
+                    if (!roots.empty()) out.ScriptRoots = roots;
+                }
+            }
         }
         if (data.contains("Logging")) {
             const auto& g = toml::find(data, "Logging");

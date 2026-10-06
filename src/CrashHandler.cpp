@@ -1,8 +1,6 @@
 #include "CrashHandler.h"
 #include <dbghelp.h>
 #include <fstream>
-#include <iomanip>
-#include <string>
 
 static volatile LONG g_CrashHandled = 0;
 static char g_Breadcrumbs[16][64] = {};
