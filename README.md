@@ -2,7 +2,7 @@
 
 Lua script loader with crash logger for God of War Ragnarok.
 
-Runs as a `version.dll` proxy. On game startup it initializes a Lua 5.4 state,
+Runs as a `winmm.dll` proxy. On game startup it initializes a Lua 5.4 state,
 executes every script under the configured script roots (`mod/` and `mods/scripts/`by default), 
 and produces a full crash report.
 
@@ -15,11 +15,13 @@ and produces a full crash report.
 - Breadcrumb ring buffer capturing the last 16 events before a crash
 - `spdlog` based leveled logging (console and file)
 - TOML configuration
-- `version.dll` proxy that forwards all 13 system exports
+- `winmm.dll` proxy that forwards all 180 system exports via QuickDllProxy
+
+Note: The loader now uses winmm.dll as the proxy DLL, which does not conflict with God of War Ragnarok's PlayStation PC SDK. No separate "real" DLL is required; QuickDllProxy resolves the original exports at runtime.
 
 ## Installation
 
-1. Copy `version.dll` next to `GoWR.exe`.
+1. Copy `winmm.dll` next to `GoWR.exe`.
 2. Create `mods/loader_config.toml` in the game root.
 3. Place Lua scripts in either of these locations — both are scanned:
 
@@ -115,7 +117,7 @@ _Logs remain under `mods/logs/` regardless of where scripts live._
 
 ## Uninstallation
 
-Delete `version.dll` from the game folder or rename it like `version.dll.bkp`. The real `version.dll` living in `C:\Windows\System32` is never touched, so the game runs normally afterwards. The `mods/` folder can be kept or removed.
+Delete `winmm.dll` from the game folder or rename it like `winmm.dll.bkp`. The real `winmm.dll` living in `C:\Windows\System32` is never touched, so the game runs normally afterwards. The `mods/` folder can be kept or removed.
 
 ## Building
 
@@ -131,7 +133,7 @@ cmake --preset default
 cmake --build --preset release
 ```
 
-Output: `build/Release/version.dll`.
+Output: `build/Release/winmm.dll`.
 
 Dependencies (Lua 5.4.6, spdlog, toml11) are resolved through vcpkg using the manifest in `vcpkg.json`. They are statically linked, so the output is a single DLL with no runtime dependencies beyond the Windows system libraries.
 
@@ -140,12 +142,12 @@ Dependencies (Lua 5.4.6, spdlog, toml11) are resolved through vcpkg using the ma
 ```
 src/
 ├── main.cpp               Loader thread, startup/shutdown
-├── ProxyStubs.cpp         version.dll export forwarders, DllMain
+├── ProxyStubs.cpp         winmm.dll proxy and DllMain (QuickDllProxy)
 ├── CrashHandler.cpp       Vectored Exception Handler, callstack, breadcrumbs
 ├── LuaManager.cpp         Lua state and script loading
 ├── Logger.cpp             spdlog wrapper
-└── Config.cpp             TOML reader
-version.def                Export name mapping
+├── Config.cpp             TOML reader
+└── winmm_exports.inc      Proxied export list for QuickDllProxy
 resources/version.rc.in    DLL version resource
 ```
 

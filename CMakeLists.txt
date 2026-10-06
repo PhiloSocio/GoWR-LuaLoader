@@ -19,6 +19,14 @@ if(MSVC)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif()
 
+include(FetchContent)
+FetchContent_Declare(
+    QuickDllProxy
+    GIT_REPOSITORY https://github.com/Nukem9/QuickDllProxy.git
+    GIT_TAG master
+)
+FetchContent_MakeAvailable(QuickDllProxy)
+
 find_package(Lua REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(toml11 CONFIG REQUIRED)
@@ -35,7 +43,6 @@ add_library(version SHARED
     ${SOURCES}
     ${HEADERS}
     ${CMAKE_BINARY_DIR}/version.rc
-    version.def
 )
 
 target_include_directories(version PRIVATE
@@ -62,7 +69,7 @@ target_compile_definitions(version PRIVATE
 
 set_target_properties(version PROPERTIES
     PREFIX ""
-    OUTPUT_NAME "version"
+    OUTPUT_NAME "winmm"
 )
 
 if(MSVC)
