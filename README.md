@@ -44,9 +44,6 @@ LoadScripts = true
 [Logging]
 ConsoleLogLevel = "warn"
 FileLogLevel = "info"
-
-[Advanced]
-RemoveWindowsVersionCheck = false
 ```
 
 Log levels: `off`, `trace`, `debug`, `info`, `warning`, `error`, `critical`.
@@ -113,14 +110,14 @@ Dependencies (Lua 5.4.6, spdlog, toml11) are resolved through vcpkg using the ma
 
 ```
 src/
-├── main.cpp           Loader thread, startup/shutdown
-├── ProxyStubs.cpp     version.dll export forwarders, DllMain
-├── CrashHandler.cpp   Vectored Exception Handler, callstack, breadcrumbs
-├── LuaManager.cpp     Lua state and script loading
-├── Logger.cpp         spdlog wrapper
-└── Config.cpp         TOML reader
-version.def            Export name mapping
-resources/version.rc   DLL version resource
+├── main.cpp               Loader thread, startup/shutdown
+├── ProxyStubs.cpp         version.dll export forwarders, DllMain
+├── CrashHandler.cpp       Vectored Exception Handler, callstack, breadcrumbs
+├── LuaManager.cpp         Lua state and script loading
+├── Logger.cpp             spdlog wrapper
+└── Config.cpp             TOML reader
+version.def                Export name mapping
+resources/version.rc.in    DLL version resource
 ```
 
 ## Credits
