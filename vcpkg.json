@@ -1,0 +1,9 @@
+{
+    "name": "gowr-lualoader",
+    "version": "1.0.0",
+    "dependencies": [
+        "lua",
+        "spdlog",
+        "toml11"
+    ]
+}
