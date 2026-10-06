@@ -23,7 +23,7 @@ public:
     static LogLevel ParseLevel(const std::string& s);
     static spdlog::level::level_enum ToSpd(LogLevel l);
 private:
-    static std::shared_ptr<spdlog::logger> s_Console;
+    static std::shared_ptr<spdlog::logger> s_Debug;
     static std::shared_ptr<spdlog::logger> s_File;
     static LogLevel s_ConsoleLevel;
     static LogLevel s_FileLevel;

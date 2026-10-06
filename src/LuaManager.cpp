@@ -8,21 +8,21 @@ extern "C" {
 }
 #include <mutex>
 
-static lua_State* L = nullptr;
+static lua_State* g_LuaState = nullptr;
 static std::mutex g_LuaMutex;
 
-static int CustomLuaPrint(lua_State* L) {
-    int nargs = lua_gettop(L);
+static int LuaPrint(lua_State* g_LuaState) {
+    int nargs = lua_gettop(g_LuaState);
     std::string out;
     for (int i = 1; i <= nargs; i++) {
         if (i > 1) out += "\t";
-        if (lua_isstring(L, i)) {
+        if (lua_isstring(g_LuaState, i)) {
             size_t len = 0;
-            const char* s = lua_tolstring(L, i, &len);
+            const char* s = lua_tolstring(g_LuaState, i, &len);
             if (s) out.append(s, len);
         } else {
             out += "<";
-            out += luaL_typename(L, i);
+            out += luaL_typename(g_LuaState, i);
             out += ">";
         }
     }
@@ -30,37 +30,39 @@ static int CustomLuaPrint(lua_State* L) {
     return 0;
 }
 
-static int LuaLogInfo(lua_State* L)    { Logger::Log(LogLevel::Info,    std::string("[lua] ") + luaL_checkstring(L, 1)); return 0; }
-static int LuaLogWarn(lua_State* L)    { Logger::Log(LogLevel::Warning, std::string("[lua] ") + luaL_checkstring(L, 1)); return 0; }
-static int LuaLogError(lua_State* L)   { Logger::Log(LogLevel::Error,   std::string("[lua] ") + luaL_checkstring(L, 1)); return 0; }
-static int LuaLogDebug(lua_State* L)   { Logger::Log(LogLevel::Debug,   std::string("[lua] ") + luaL_checkstring(L, 1)); return 0; }
+static int LuaLogInfo(lua_State* g_LuaState)    { Logger::Log(LogLevel::Info,    std::string("[lua] ") + luaL_checkstring(g_LuaState, 1)); return 0; }
+static int LuaLogWarn(lua_State* g_LuaState)    { Logger::Log(LogLevel::Warning, std::string("[lua] ") + luaL_checkstring(g_LuaState, 1)); return 0; }
+static int LuaLogError(lua_State* g_LuaState)   { Logger::Log(LogLevel::Error,   std::string("[lua] ") + luaL_checkstring(g_LuaState, 1)); return 0; }
+static int LuaLogDebug(lua_State* g_LuaState)   { Logger::Log(LogLevel::Debug,   std::string("[lua] ") + luaL_checkstring(g_LuaState, 1)); return 0; }
 
 void LuaManager::Initialize(const std::filesystem::path& scriptsDir) {
     std::lock_guard<std::mutex> lock(g_LuaMutex);
     CrashHandler::WriteBreadcrumb("LuaManager::Initialize:enter");
 
-    L = luaL_newstate();
-    if (!L) {
+    g_LuaState = luaL_newstate();
+    if (!g_LuaState) {
         Logger::Log(LogLevel::Error, "Failed to create Lua state");
         return;
     }
 
-    luaL_openlibs(L);
+    luaL_openlibs(g_LuaState);
 
-    lua_register(L, "print", CustomLuaPrint);
-    lua_register(L, "log_info",  LuaLogInfo);
-    lua_register(L, "log_warn",  LuaLogWarn);
-    lua_register(L, "log_error", LuaLogError);
-    lua_register(L, "log_debug", LuaLogDebug);
+    lua_register(g_LuaState, "print", LuaPrint);
+    lua_register(g_LuaState, "log_info",  LuaLogInfo);
+    lua_register(g_LuaState, "log_warn",  LuaLogWarn);
+    lua_register(g_LuaState, "log_error", LuaLogError);
+    lua_register(g_LuaState, "log_debug", LuaLogDebug);
 
-    lua_newtable(L);
-    lua_pushstring(L, "AnArchos");
-    lua_setfield(L, -2, "author");
-    lua_pushstring(L, "GoWR-LuaLoader");
-    lua_setfield(L, -2, "name");
-    lua_pushstring(L, "1.0.0");
-    lua_setfield(L, -2, "version");
-    lua_setglobal(L, "LOADER");
+    lua_newtable(g_LuaState);
+    lua_pushstring(g_LuaState, LOADER_NAME);
+    lua_setfield(g_LuaState, -2, "name");
+    lua_pushstring(g_LuaState, LOADER_VERSION);
+    lua_setfield(g_LuaState, -2, "version");
+    lua_pushstring(g_LuaState, LOADER_AUTHOR);
+    lua_setfield(g_LuaState, -2, "author");
+    lua_pushstring(g_LuaState, LOADER_EMAIL);
+    lua_setfield(g_LuaState, -2, "email");
+    lua_setglobal(g_LuaState, "LOADER");
 
     if (!std::filesystem::exists(scriptsDir)) {
         std::filesystem::create_directories(scriptsDir);
@@ -75,17 +77,17 @@ void LuaManager::Initialize(const std::filesystem::path& scriptsDir) {
         std::string filePath = entry.path().string();
         CrashHandler::WriteBreadcrumb(("load:" + entry.path().filename().string()).c_str());
 
-        if (luaL_loadfile(L, filePath.c_str()) != LUA_OK) {
-            const char* err = lua_tostring(L, -1);
+        if (luaL_loadfile(g_LuaState, filePath.c_str()) != LUA_OK) {
+            const char* err = lua_tostring(g_LuaState, -1);
             Logger::Log(LogLevel::Error, "load failed: " + filePath + " - " + (err ? err : "?"));
-            lua_pop(L, 1);
+            lua_pop(g_LuaState, 1);
             failed++;
             continue;
         }
-        if (lua_pcall(L, 0, LUA_MULTRET, 0) != LUA_OK) {
-            const char* err = lua_tostring(L, -1);
+        if (lua_pcall(g_LuaState, 0, LUA_MULTRET, 0) != LUA_OK) {
+            const char* err = lua_tostring(g_LuaState, -1);
             Logger::Log(LogLevel::Error, "exec failed: " + filePath + " - " + (err ? err : "?"));
-            lua_pop(L, 1);
+            lua_pop(g_LuaState, 1);
             failed++;
             continue;
         }
@@ -102,9 +104,9 @@ void LuaManager::Initialize(const std::filesystem::path& scriptsDir) {
 
 void LuaManager::Shutdown() {
     std::lock_guard<std::mutex> lock(g_LuaMutex);
-    if (L) {
-        lua_close(L);
-        L = nullptr;
+    if (g_LuaState) {
+        lua_close(g_LuaState);
+        g_LuaState = nullptr;
         Logger::Log(LogLevel::Info, "Lua state closed");
     }
 }

@@ -1,15 +1,15 @@
-LIBRARY "version"
+LIBRARY version
 EXPORTS
-    GetFileVersionInfoA=oGetFileVersionInfoA @1
-    GetFileVersionInfoByHandle=oGetFileVersionInfoByHandle @2
-    GetFileVersionInfoExA=oGetFileVersionInfoExA @3
-    GetFileVersionInfoExW=oGetFileVersionInfoExW @4
-    GetFileVersionInfoSizeA=oGetFileVersionInfoSizeA @5
-    GetFileVersionInfoSizeExA=oGetFileVersionInfoSizeExA @6
-    GetFileVersionInfoSizeExW=oGetFileVersionInfoSizeExW @7
-    GetFileVersionInfoSizeW=oGetFileVersionInfoSizeW @8
-    GetFileVersionInfoW=oGetFileVersionInfoW @9
-    VerFindFileA=oVerFindFileA @10
-    VerFindFileW=oVerFindFileW @11
-    VerQueryValueA=oVerQueryValueA @12
-    VerQueryValueW=oVerQueryValueW @13
+    GetFileVersionInfoA=ProxyGetFileVersionInfoA
+    GetFileVersionInfoByHandle=ProxyGetFileVersionInfoByHandle
+    GetFileVersionInfoExA=ProxyGetFileVersionInfoExA
+    GetFileVersionInfoExW=ProxyGetFileVersionInfoExW
+    GetFileVersionInfoSizeA=ProxyGetFileVersionInfoSizeA
+    GetFileVersionInfoSizeExA=ProxyGetFileVersionInfoSizeExA
+    GetFileVersionInfoSizeExW=ProxyGetFileVersionInfoSizeExW
+    GetFileVersionInfoSizeW=ProxyGetFileVersionInfoSizeW
+    GetFileVersionInfoW=ProxyGetFileVersionInfoW
+    VerFindFileA=ProxyVerFindFileA
+    VerFindFileW=ProxyVerFindFileW
+    VerQueryValueA=ProxyVerQueryValueA
+    VerQueryValueW=ProxyVerQueryValueW

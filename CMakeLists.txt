@@ -7,6 +7,8 @@ project(
     HOMEPAGE_URL "https://github.com/PhiloSocio/GoWR-LuaLoader"
     LANGUAGES C CXX
 )
+set(ADD_PLUGIN_AUTHOR "AnArchos" CACHE STRING "Plugin author")
+set(ADD_PLUGIN_EMAIL  "patreon.com/AnArchos" CACHE STRING "Plugin email")
 
 if(NOT DEFINED CMAKE_CXX_STANDARD)
     set(CMAKE_CXX_STANDARD 20)
@@ -21,13 +23,18 @@ find_package(Lua REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(toml11 CONFIG REQUIRED)
 
-file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS "src/*.h" "src/*.hpp")
+file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS "src/*.h" "src/*.hpp" "src/*.inc")
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "src/*.cpp")
 
+configure_file(
+    resources/version.rc.in
+    ${CMAKE_BINARY_DIR}/version.rc
+    @ONLY
+)
 add_library(version SHARED
     ${SOURCES}
     ${HEADERS}
-    resources/version.rc
+    ${CMAKE_BINARY_DIR}/version.rc
     version.def
 )
 
@@ -47,8 +54,10 @@ target_compile_definitions(version PRIVATE
     WIN32_LEAN_AND_MEAN
     NOMINMAX
     _CRT_SECURE_NO_WARNINGS
-    AUTHOR="${ADD_PLUGIN_AUTHOR}"
-    EMAIL="${ADD_PLUGIN_EMAIL}"
+    LOADER_NAME="${PROJECT_NAME}"
+    LOADER_VERSION="${PROJECT_VERSION}"
+    LOADER_AUTHOR="${ADD_PLUGIN_AUTHOR}"
+    LOADER_EMAIL="${ADD_PLUGIN_EMAIL}"
 )
 
 set_target_properties(version PROPERTIES

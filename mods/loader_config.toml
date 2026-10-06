@@ -1,9 +1,0 @@
-[Lua]
-LoadScripts = true
-
-[Logging]
-ConsoleLogLevel = "warn"
-FileLogLevel = "info"
-
-[Advanced]
-RemoveWindowsVersionCheck = false

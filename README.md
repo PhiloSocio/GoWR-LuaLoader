@@ -113,12 +113,13 @@ Dependencies (Lua 5.4.6, spdlog, toml11) are resolved through vcpkg using the ma
 
 ```
 src/
-├── main.cpp           DLL proxy and main thread
+├── main.cpp           Loader thread, startup/shutdown
+├── ProxyStubs.cpp     version.dll export forwarders, DllMain
 ├── CrashHandler.cpp   Vectored Exception Handler, callstack, breadcrumbs
 ├── LuaManager.cpp     Lua state and script loading
 ├── Logger.cpp         spdlog wrapper
 └── Config.cpp         TOML reader
-version.def            Forwarded exports
+version.def            Export name mapping
 resources/version.rc   DLL version resource
 ```
 

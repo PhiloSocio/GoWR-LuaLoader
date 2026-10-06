@@ -18,11 +18,28 @@ void CrashHandler::WriteBreadcrumb(const char* tag) {
     ReleaseSRWLockExclusive(&g_BreadcrumbLock);
 }
 
+static bool IsFatalException(DWORD code) {
+    switch (code) {
+        case 0xC0000005:  // ACCESS_VIOLATION
+        case 0xC000001D:  // ILLEGAL_INSTRUCTION
+        case 0xC0000094:  // INTEGER_DIVIDE_BY_ZERO
+        case 0xC00000FD:  // STACK_OVERFLOW
+        case 0xC0000374:  // HEAP_CORRUPTION
+        case 0xC0000409:  // STACK_BUFFER_OVERRUN
+        case 0xC0000602:  // FAIL_FAST
+        case 0xC000070A:  // ASSERTION_FAILURE
+            return true;
+        default:
+            return false;
+    }
+}
+
 static LONG WINAPI VectoredExceptionHandler(PEXCEPTION_POINTERS ExceptionInfo) {
-    if (ExceptionInfo->ExceptionRecord->ExceptionCode < 0x80000000) {
+    DWORD code = ExceptionInfo->ExceptionRecord->ExceptionCode;
+    if (!IsFatalException(code)) {
         return EXCEPTION_CONTINUE_SEARCH;
     }
-    if (InterlockedExchange(&g_CrashHandled, 1) != 0) {
+    if (InterlockedCompareExchange(&g_CrashHandled, 1, 0) != 0) {
         return EXCEPTION_CONTINUE_SEARCH;
     }
 
@@ -94,5 +111,5 @@ static LONG WINAPI VectoredExceptionHandler(PEXCEPTION_POINTERS ExceptionInfo) {
 }
 
 void CrashHandler::Initialize() {
-    AddVectoredExceptionHandler(1, VectoredExceptionHandler);
+    AddVectoredExceptionHandler(0, VectoredExceptionHandler);
 }
